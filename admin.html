@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扭蛋机管理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container admin-container">
+        <h1>扭蛋机管理</h1>
+        <div class="admin-section">
+            <h2>修改余额</h2>
+            <div class="balance-form">
+                <p>当前余额: <span id="admin-balance">0</span> 硬币</p>
+                <input type="number" id="balance-amount" placeholder="输入数量">
+                <button id="add-balance">增加</button>
+                <button id="reduce-balance">减少</button>
+            </div>
+        </div>
+        <div class="admin-section">
+            <h2>管理图片</h2>
+            <div class="image-form">
+                <input type="text" id="image-url" placeholder="图片URL地址">
+                <input type="text" id="image-description" placeholder="图片描述">
+                <select id="image-rarity">
+                    <option value="1">普通 (60%)</option>
+                    <option value="2">稀有 (30%)</option>
+                    <option value="3">超稀有 (10%)</option>
+                </select>
+                <button id="add-image">添加图片</button>
+            </div>
+            <div id="image-list" class="image-list">
+                <!-- 图片列表将在这里显示 -->
+            </div>
+        </div>
+        <a href="index.html" class="back-link">返回扭蛋机</a>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

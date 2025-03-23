@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甜蜜扭蛋机</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>甜蜜扭蛋机</h1>
+        <div class="balance-container">
+            <p>当前余额: <span id="balance">100</span> 硬币</p>
+        </div>
+        <div class="gashapon-machine">
+            <img src="https://i.imgur.com/pKeWJQf.png" alt="扭蛋机" class="machine-img">
+            <button id="draw-button">扭蛋 (消耗10硬币)</button>
+        </div>
+        <div id="result" class="result-container" style="display: none;">
+            <div class="result-content">
+                <h2>恭喜你获得:</h2>
+                <div class="image-container">
+                    <img id="result-image" src="" alt="扭蛋结果">
+                </div>
+                <p id="result-text"></p>
+                <button id="close-result">关闭</button>
+            </div>
+        </div>
+        <div class="history-container">
+            <h2>我的收藏</h2>
+            <div id="history" class="history-items"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
