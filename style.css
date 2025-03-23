@@ -2,12 +2,15 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: "Comic Sans MS", "Marker Felt", Arial, sans-serif; /* 更可爱的字体 */
 }
 
 body {
-    background-color: #ffeaf0;
-    color: #333;
+    background-color: #fff5e6; /* 温暖的米色背景 */
+    color: #5a3d2b; /* 温暖的棕色文字 */
+    background-image: url('https://i.imgur.com/XtJKPmL.png'); /* 猫爪背景图案 */
+    background-size: 100px;
+    background-repeat: repeat;
 }
 
 .container {
@@ -18,23 +21,26 @@ body {
 
 h1 {
     text-align: center;
-    color: #ff6b9d;
+    color: #ff7e4a; /* 暖橙色 */
     margin-bottom: 30px;
+    font-size: 2.3rem;
+    text-shadow: 2px 2px 0px #ffcf9c; /* 文字阴影增加可爱度 */
 }
 
 h2 {
-    color: #ff6b9d;
+    color: #ff7e4a; /* 暖橙色 */
     margin-bottom: 15px;
 }
 
 .balance-container {
     background-color: white;
     padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 20px; /* 更圆润的边角 */
+    box-shadow: 0 4px 10px rgba(255, 166, 77, 0.2); /* 温暖色调的阴影 */
     margin-bottom: 20px;
     text-align: center;
     font-size: 18px;
+    border: 3px dashed #ffcf9c; /* 可爱的虚线边框 */
 }
 
 .gashapon-machine {
@@ -45,21 +51,30 @@ h2 {
 .machine-img {
     width: 200px;
     margin-bottom: 15px;
+    filter: drop-shadow(0px 5px 10px rgba(255, 166, 77, 0.4)); /* 添加滤镜阴影 */
 }
 
 button {
-    background-color: #ff6b9d;
+    background-color: #ff7e4a; /* 暖橙色 */
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 25px;
+    border-radius: 50px; /* 圆形按钮 */
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 0 #e56a38; /* 立体按钮效果 */
+    font-weight: bold;
 }
 
 button:hover {
-    background-color: #ff4f8a;
+    background-color: #ff9466; /* 亮一点的橙色 */
+    transform: translateY(-2px); /* 悬浮效果 */
+}
+
+button:active {
+    transform: translateY(2px); /* 点击效果 */
+    box-shadow: 0 2px 0 #e56a38;
 }
 
 .result-container {
@@ -68,7 +83,7 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(255, 166, 77, 0.7); /* 橙色半透明背景 */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -77,10 +92,12 @@ button:hover {
 
 .result-content {
     background-color: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 30px;
+    border-radius: 25px; /* 更圆润的边角 */
     text-align: center;
     max-width: 80%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 5px solid #ffc285; /* 橙色边框 */
 }
 
 .image-container {
@@ -90,14 +107,16 @@ button:hover {
 .image-container img {
     max-width: 100%;
     max-height: 300px;
-    border-radius: 5px;
+    border-radius: 15px; /* 图片圆角 */
+    border: 3px solid #ffecd6; /* 淡橙色边框 */
 }
 
 .history-container {
     background-color: white;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 20px; /* 更圆润的边角 */
+    box-shadow: 0 4px 10px rgba(255, 166, 77, 0.2);
+    border: 3px dashed #ffcf9c; /* 虚线边框 */
 }
 
 .history-items {
@@ -109,30 +128,43 @@ button:hover {
 
 .history-item {
     width: calc(33.333% - 10px);
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    padding: 10px;
+    background-color: #fff8ef; /* 非常淡的橙色背景 */
+    border-radius: 15px;
+    padding: 15px;
     text-align: center;
+    box-shadow: 0 3px 5px rgba(255, 166, 77, 0.1);
+    transition: transform 0.3s;
+    border: 2px solid #ffe0b3; /* 淡橙色边框 */
+}
+
+.history-item:hover {
+    transform: translateY(-5px); /* 悬浮效果 */
 }
 
 .history-item img {
     width: 100%;
     height: 100px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 10px;
     margin-bottom: 10px;
+    border: 2px solid #ffefdb; /* 淡橙色边框 */
 }
 
 /* 管理页面样式 */
 .admin-container {
     background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(255, 166, 77, 0.2);
+    border: 3px dashed #ffcf9c; /* 虚线边框 */
 }
 
 .admin-section {
     margin-bottom: 30px;
+    background-color: #fff8ef; /* 非常淡的橙色背景 */
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid #ffe0b3; /* 淡橙色边框 */
 }
 
 .balance-form, .image-form {
@@ -143,9 +175,17 @@ button:hover {
 }
 
 input, select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px;
+    border: 2px solid #ffe0b3; /* 淡橙色边框 */
+    border-radius: 50px; /* 圆形输入框 */
+    background-color: #fffaf0; /* 浅米色背景 */
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #ff9466; /* 聚焦时边框颜色变化 */
+    box-shadow: 0 0 5px rgba(255, 148, 102, 0.5);
 }
 
 .image-list {
@@ -155,27 +195,37 @@ input, select {
 }
 
 .image-item {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
+    border: 2px solid #ffe0b3; /* 淡橙色边框 */
+    border-radius: 15px;
+    padding: 15px;
     text-align: center;
+    background-color: #fff8ef; /* 非常淡的橙色背景 */
+    transition: transform 0.3s;
+}
+
+.image-item:hover {
+    transform: translateY(-5px); /* 悬浮效果 */
 }
 
 .image-item img {
     width: 100%;
     height: 100px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 10px;
     margin-bottom: 10px;
+    border: 2px solid #ffefdb; /* 淡橙色边框 */
 }
 
 .back-link {
     display: inline-block;
     margin-top: 20px;
-    color: #ff6b9d;
+    color: #ff7e4a; /* 橙色链接 */
     text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
 }
 
 .back-link:hover {
+    color: #ff9466; /* 亮一点的橙色 */
     text-decoration: underline;
 }
