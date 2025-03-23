@@ -1,8 +1,8 @@
-// 配置信息 - 修改为你的实际信息
+// 配置信息 - 已填入您的实际信息
 const CONFIG = {
-  binId: '67e04c0d8960c979a576f646',  // 例如：60a1b3f59a9aa735a2321c4a
-  apiKey: '$2a$10$qFSedI2vR8ip8TiEZgmHb.W2Fg2YinWfC/SNjfvxVkEdDlwPkfN0i', // 例如：$2b$10$xxxxxxxxxxxxxxxxxxxxx
-  adminPassword: 'Younj1031'  // 设置一个密码，用于管理员验证
+  binId: '67e04c0d8960c979a576f646',
+  apiKey: '$2a$10$qFSedI2vR8ip8TiEZgmHb.W2Fg2YinWfC/SNjfvxVkEdDlwPkfN0i',
+  adminPassword: 'Younj1031'
 };
 
 // 全局数据对象
@@ -15,77 +15,128 @@ let globalData = {
 // 检查是否是管理员
 let isAdmin = false;
 
+// API请求函数 - 使用简化的fetch包装器
+async function makeApiRequest(url, method = 'GET', body = null) {
+  try {
+    const options = {
+      method: method,
+      headers: {
+        'X-Master-Key': CONFIG.apiKey,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+    
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      console.error(`API错误: ${response.status}`);
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('API请求错误:', error);
+    return null;
+  }
+}
+
 // 页面加载时获取数据
 async function loadData() {
-  try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.binId}/latest`, {
-      headers: {
-        'X-Master-Key': CONFIG.apiKey
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('获取数据失败');
-    }
-    
-    const data = await response.json();
-    globalData = data.record;
-    
-    // 根据当前页面加载不同功能
-    if (window.location.pathname.includes('admin.html')) {
-      checkAdminAuth();
-    } else {
-      updateUserInterface();
-    }
-  } catch (error) {
-    console.error('加载数据出错:', error);
-    alert('加载数据失败，请刷新页面重试');
-  }
-}
-
-// 保存数据到JSONBin - 移除了isAdmin检查，所有人都可以保存数据
-async function saveData() {
-  try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.binId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': CONFIG.apiKey
-      },
-      body: JSON.stringify(globalData)
-    });
-    
-    if (!response.ok) {
-      throw new Error('保存数据失败');
-    }
-    
-    console.log('数据已成功保存');
-    return true;
-  } catch (error) {
-    console.error('保存数据出错:', error);
-    alert('保存数据失败，请重试');
+  const data = await makeApiRequest(`https://api.jsonbin.io/v3/b/${CONFIG.binId}/latest`);
+  
+  if (!data) {
+    alert('无法加载数据，请刷新页面重试');
     return false;
   }
+  
+  // 更新全局数据
+  globalData = data.record;
+  
+  // 如果是首次使用，初始化数据结构
+  if (!globalData.balance) globalData.balance = 100;
+  if (!globalData.images) globalData.images = [];
+  if (!globalData.history) globalData.history = [];
+  
+  return true;
 }
 
-// 用户界面功能
+// 保存数据到JSONBin
+async function saveData() {
+  const result = await makeApiRequest(
+    `https://api.jsonbin.io/v3/b/${CONFIG.binId}`, 
+    'PUT', 
+    globalData
+  );
+  
+  return result !== null;
+}
+
+// 初始化扭蛋页面
+async function initGashaponPage() {
+  // 加载数据
+  const loadSuccess = await loadData();
+  if (!loadSuccess) return;
+  
+  // 更新UI
+  updateUserInterface();
+  
+  // 设置扭蛋功能
+  setupGashaponEvents();
+}
+
+// 初始化管理页面
+async function initAdminPage() {
+  // 验证管理员身份
+  if (!checkAdminAuth()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  
+  // 加载数据
+  const loadSuccess = await loadData();
+  if (!loadSuccess) return;
+  
+  // 更新UI
+  updateAdminInterface();
+  
+  // 设置管理功能
+  setupAdminEvents();
+}
+
+// 更新用户界面
 function updateUserInterface() {
   const balanceElement = document.getElementById('balance');
   const historyContainer = document.getElementById('history');
   
-  // 更新余额显示
   if (balanceElement) {
     balanceElement.textContent = globalData.balance;
   }
   
-  // 更新历史记录
   if (historyContainer) {
     displayHistory(historyContainer);
   }
 }
 
-// 扭蛋机页面功能
-function loadGashaponPage() {
+// 更新管理界面
+function updateAdminInterface() {
+  const balanceElement = document.getElementById('admin-balance');
+  const imageListContainer = document.getElementById('image-list');
+  
+  if (balanceElement) {
+    balanceElement.textContent = globalData.balance;
+  }
+  
+  if (imageListContainer) {
+    displayImageList(imageListContainer);
+  }
+}
+
+// 设置扭蛋事件
+function setupGashaponEvents() {
   const drawButton = document.getElementById('draw-button');
   const resultContainer = document.getElementById('result');
   const resultImage = document.getElementById('result-image');
@@ -94,27 +145,31 @@ function loadGashaponPage() {
   
   // 扭蛋按钮点击事件
   drawButton.addEventListener('click', async function() {
-    const cost = 10;
+    drawButton.disabled = true; // 防止重复点击
     
-    // 先刷新获取最新数据
-    await loadData();
-    
-    if (globalData.balance < cost) {
-      alert('余额不足！请等待管理员添加硬币。');
-      return;
-    }
-    
-    // 扣除硬币
-    globalData.balance -= cost;
-    
-    // 抽取图片
-    const drawnImage = drawRandomImage();
-    
-    if (drawnImage) {
-      // 显示结果
-      resultImage.src = drawnImage.url;
-      resultText.textContent = drawnImage.description;
-      resultContainer.style.display = 'flex';
+    try {
+      // 刷新数据
+      await loadData();
+      
+      const cost = 10;
+      if (globalData.balance < cost) {
+        alert('余额不足！请等待管理员添加硬币。');
+        drawButton.disabled = false;
+        return;
+      }
+      
+      // 扣除硬币
+      globalData.balance -= cost;
+      
+      // 抽取图片
+      const drawnImage = drawRandomImage();
+      
+      if (!drawnImage) {
+        alert('抽奖失败，图片库为空，请联系管理员添加图片。');
+        globalData.balance += cost; // 退回硬币
+        drawButton.disabled = false;
+        return;
+      }
       
       // 添加到历史记录
       globalData.history.push({
@@ -122,21 +177,30 @@ function loadGashaponPage() {
         timestamp: new Date().toISOString()
       });
       
+      // 保存数据
+      const saveSuccess = await saveData();
+      
+      if (!saveSuccess) {
+        alert('保存抽奖结果失败，请重试');
+        globalData.balance += cost; // 退回硬币
+        globalData.history.pop(); // 移除历史记录
+        drawButton.disabled = false;
+        return;
+      }
+      
       // 更新界面
       updateUserInterface();
       
-      // 保存结果 - 无需检查是否管理员
-      const saveSuccess = await saveData();
+      // 显示结果
+      resultImage.src = drawnImage.url;
+      resultText.textContent = drawnImage.description;
+      resultContainer.style.display = 'flex';
       
-      // 如果保存失败，回滚状态
-      if (!saveSuccess) {
-        globalData.balance += cost;
-        globalData.history.pop();
-        updateUserInterface();
-        alert('操作未完成，已恢复余额');
-      }
-    } else {
-      alert('抽奖失败，请联系管理员添加图片。');
+    } catch (error) {
+      console.error('抽奖过程出错:', error);
+      alert('抽奖过程出错，请重试');
+    } finally {
+      drawButton.disabled = false;
     }
   });
   
@@ -146,9 +210,94 @@ function loadGashaponPage() {
   });
 }
 
+// 设置管理页面事件
+function setupAdminEvents() {
+  const balanceAmountInput = document.getElementById('balance-amount');
+  const addBalanceButton = document.getElementById('add-balance');
+  const reduceBalanceButton = document.getElementById('reduce-balance');
+  const imageUrlInput = document.getElementById('image-url');
+  const imageDescriptionInput = document.getElementById('image-description');
+  const imageRaritySelect = document.getElementById('image-rarity');
+  const addImageButton = document.getElementById('add-image');
+  
+  // 增加余额
+  addBalanceButton.addEventListener('click', async function() {
+    const amount = parseInt(balanceAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert('请输入有效数量!');
+      return;
+    }
+    
+    // 刷新数据
+    await loadData();
+    
+    globalData.balance += amount;
+    
+    const saveSuccess = await saveData();
+    if (saveSuccess) {
+      updateAdminInterface();
+      balanceAmountInput.value = '';
+    } else {
+      alert('保存失败，请重试');
+    }
+  });
+  
+  // 减少余额
+  reduceBalanceButton.addEventListener('click', async function() {
+    const amount = parseInt(balanceAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert('请输入有效数量!');
+      return;
+    }
+    
+    // 刷新数据
+    await loadData();
+    
+    globalData.balance = Math.max(0, globalData.balance - amount);
+    
+    const saveSuccess = await saveData();
+    if (saveSuccess) {
+      updateAdminInterface();
+      balanceAmountInput.value = '';
+    } else {
+      alert('保存失败，请重试');
+    }
+  });
+  
+  // 添加图片
+  addImageButton.addEventListener('click', async function() {
+    const url = imageUrlInput.value.trim();
+    const description = imageDescriptionInput.value.trim();
+    const rarity = parseInt(imageRaritySelect.value);
+    
+    if (!url || !description) {
+      alert('请填写图片URL和描述!');
+      return;
+    }
+    
+    // 刷新数据
+    await loadData();
+    
+    globalData.images.push({
+      url: url,
+      description: description,
+      rarity: rarity
+    });
+    
+    const saveSuccess = await saveData();
+    if (saveSuccess) {
+      updateAdminInterface();
+      imageUrlInput.value = '';
+      imageDescriptionInput.value = '';
+    } else {
+      alert('保存失败，请重试');
+    }
+  });
+}
+
 // 随机抽取图片逻辑
 function drawRandomImage() {
-  if (globalData.images.length === 0) return null;
+  if (!globalData.images || globalData.images.length === 0) return null;
   
   // 根据稀有度计算概率
   let weightedImages = [];
@@ -171,7 +320,7 @@ function drawRandomImage() {
 function displayHistory(container) {
   container.innerHTML = '';
   
-  if (globalData.history.length === 0) {
+  if (!globalData.history || globalData.history.length === 0) {
     container.innerHTML = '<p>还没有抽到任何图片。</p>';
     return;
   }
@@ -196,156 +345,88 @@ function displayHistory(container) {
   });
 }
 
+// 显示图片列表
+function displayImageList(container) {
+  container.innerHTML = '';
+  
+  if (!globalData.images || globalData.images.length === 0) {
+    container.innerHTML = '<p>暂无图片，请添加。</p>';
+    return;
+  }
+  
+  globalData.images.forEach((image, index) => {
+    const imageItem = document.createElement('div');
+    imageItem.className = 'image-item';
+    
+    const img = document.createElement('img');
+    img.src = image.url;
+    img.alt = image.description;
+    
+    const text = document.createElement('p');
+    text.textContent = image.description;
+    
+    const rarityText = document.createElement('p');
+    rarityText.textContent = ['普通', '稀有', '超稀有'][image.rarity - 1];
+    rarityText.style.color = ['#888', '#5d9', '#f5a'][image.rarity - 1];
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '删除';
+    deleteButton.addEventListener('click', async function() {
+      // 刷新数据
+      await loadData();
+      
+      // 找到当前索引
+      const currentIndex = globalData.images.findIndex(img => 
+        img.url === image.url && img.description === image.description
+      );
+      
+      if (currentIndex !== -1) {
+        globalData.images.splice(currentIndex, 1);
+        
+        const saveSuccess = await saveData();
+        if (saveSuccess) {
+          displayImageList(container);
+        } else {
+          alert('删除失败，请重试');
+        }
+      }
+    });
+    
+    imageItem.appendChild(img);
+    imageItem.appendChild(text);
+    imageItem.appendChild(rarityText);
+    imageItem.appendChild(deleteButton);
+    
+    container.appendChild(imageItem);
+  });
+}
+
 // 检查管理员权限
 function checkAdminAuth() {
   const savedPassword = localStorage.getItem('adminPassword');
   
   if (savedPassword === CONFIG.adminPassword) {
     isAdmin = true;
-    loadAdminPage();
-  } else {
-    const password = prompt('请输入管理员密码:');
-    
-    if (password === CONFIG.adminPassword) {
-      localStorage.setItem('adminPassword', password);
-      isAdmin = true;
-      loadAdminPage();
-    } else {
-      alert('密码错误！将返回主页');
-      window.location.href = 'index.html';
-    }
+    return true;
   }
-}
-
-// 管理页面功能
-function loadAdminPage() {
-  const balanceElement = document.getElementById('admin-balance');
-  const balanceAmountInput = document.getElementById('balance-amount');
-  const addBalanceButton = document.getElementById('add-balance');
-  const reduceBalanceButton = document.getElementById('reduce-balance');
-  const imageUrlInput = document.getElementById('image-url');
-  const imageDescriptionInput = document.getElementById('image-description');
-  const imageRaritySelect = document.getElementById('image-rarity');
-  const addImageButton = document.getElementById('add-image');
-  const imageListContainer = document.getElementById('image-list');
   
-  // 显示余额
-  balanceElement.textContent = globalData.balance;
+  const password = prompt('请输入管理员密码:');
   
-  // 显示图片列表
-  displayImageList();
-  
-  // 增加余额
-  addBalanceButton.addEventListener('click', function() {
-    const amount = parseInt(balanceAmountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-      alert('请输入有效数量!');
-      return;
-    }
-    
-    globalData.balance += amount;
-    balanceElement.textContent = globalData.balance;
-    balanceAmountInput.value = '';
-    
-    // 保存更改
-    saveData();
-  });
-  
-  // 减少余额
-  reduceBalanceButton.addEventListener('click', function() {
-    const amount = parseInt(balanceAmountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-      alert('请输入有效数量!');
-      return;
-    }
-    
-    globalData.balance = Math.max(0, globalData.balance - amount);
-    balanceElement.textContent = globalData.balance;
-    balanceAmountInput.value = '';
-    
-    // 保存更改
-    saveData();
-  });
-  
-  // 添加图片
-  addImageButton.addEventListener('click', function() {
-    const url = imageUrlInput.value.trim();
-    const description = imageDescriptionInput.value.trim();
-    const rarity = parseInt(imageRaritySelect.value);
-    
-    if (!url || !description) {
-      alert('请填写图片URL和描述!');
-      return;
-    }
-    
-    globalData.images.push({
-      url: url,
-      description: description,
-      rarity: rarity
-    });
-    
-    // 更新界面
-    displayImageList();
-    
-    // 清空输入框
-    imageUrlInput.value = '';
-    imageDescriptionInput.value = '';
-    
-    // 保存更改
-    saveData();
-  });
-  
-  // 显示图片列表
-  function displayImageList() {
-    imageListContainer.innerHTML = '';
-    
-    if (globalData.images.length === 0) {
-      imageListContainer.innerHTML = '<p>暂无图片，请添加。</p>';
-      return;
-    }
-    
-    globalData.images.forEach((image, index) => {
-      const imageItem = document.createElement('div');
-      imageItem.className = 'image-item';
-      
-      const img = document.createElement('img');
-      img.src = image.url;
-      img.alt = image.description;
-      
-      const text = document.createElement('p');
-      text.textContent = image.description;
-      
-      const rarityText = document.createElement('p');
-      rarityText.textContent = ['普通', '稀有', '超稀有'][image.rarity - 1];
-      rarityText.style.color = ['#888', '#5d9', '#f5a'][image.rarity - 1];
-      
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = '删除';
-      deleteButton.addEventListener('click', function() {
-        globalData.images.splice(index, 1);
-        displayImageList();
-        
-        // 保存更改
-        saveData();
-      });
-      
-      imageItem.appendChild(img);
-      imageItem.appendChild(text);
-      imageItem.appendChild(rarityText);
-      imageItem.appendChild(deleteButton);
-      
-      imageListContainer.appendChild(imageItem);
-    });
+  if (password === CONFIG.adminPassword) {
+    localStorage.setItem('adminPassword', password);
+    isAdmin = true;
+    return true;
+  } else {
+    alert('密码错误！将返回主页');
+    return false;
   }
 }
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
-  loadData().then(() => {
-    if (window.location.pathname.includes('admin.html')) {
-      // 管理页面已经在loadData后处理
-    } else {
-      loadGashaponPage();
-    }
-  });
+  if (window.location.pathname.includes('admin.html')) {
+    initAdminPage();
+  } else {
+    initGashaponPage();
+  }
 });
