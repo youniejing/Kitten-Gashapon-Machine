@@ -1,4 +1,4 @@
-// 配置信息 - 已填入您的实际信息
+// 配置信息
 const CONFIG = {
   binId: '67e04c0d8960c979a576f646',
   apiKey: '$2a$10$qFSedI2vR8ip8TiEZgmHb.W2Fg2YinWfC/SNjfvxVkEdDlwPkfN0i',
@@ -125,6 +125,8 @@ function updateUserInterface() {
 function updateAdminInterface() {
   const balanceElement = document.getElementById('admin-balance');
   const imageListContainer = document.getElementById('image-list');
+  const historyContainer = document.getElementById('admin-history');
+  const galleryContainer = document.getElementById('image-gallery');
   
   if (balanceElement) {
     balanceElement.textContent = globalData.balance;
@@ -132,6 +134,14 @@ function updateAdminInterface() {
   
   if (imageListContainer) {
     displayImageList(imageListContainer);
+  }
+  
+  if (historyContainer) {
+    displayAdminHistory(historyContainer);
+  }
+  
+  if (galleryContainer) {
+    displayImageGallery(galleryContainer);
   }
 }
 
@@ -142,6 +152,11 @@ function setupGashaponEvents() {
   const resultImage = document.getElementById('result-image');
   const resultText = document.getElementById('result-text');
   const closeResultButton = document.getElementById('close-result');
+  
+  if (!drawButton || !resultContainer || !resultImage || !resultText || !closeResultButton) {
+    console.error('页面元素不存在');
+    return;
+  }
   
   // 扭蛋按钮点击事件
   drawButton.addEventListener('click', async function() {
@@ -173,7 +188,8 @@ function setupGashaponEvents() {
       
       // 添加到历史记录
       globalData.history.push({
-        ...drawnImage,
+        url: drawnImage.url,
+        description: drawnImage.description,
         timestamp: new Date().toISOString()
       });
       
@@ -217,8 +233,13 @@ function setupAdminEvents() {
   const reduceBalanceButton = document.getElementById('reduce-balance');
   const imageUrlInput = document.getElementById('image-url');
   const imageDescriptionInput = document.getElementById('image-description');
-  const imageRaritySelect = document.getElementById('image-rarity');
   const addImageButton = document.getElementById('add-image');
+  const resetMachineButton = document.getElementById('reset-machine');
+  
+  if (!addBalanceButton || !reduceBalanceButton || !addImageButton) {
+    console.error('管理页面元素不存在');
+    return;
+  }
   
   // 增加余额
   addBalanceButton.addEventListener('click', async function() {
@@ -265,55 +286,64 @@ function setupAdminEvents() {
   });
   
   // 添加图片
-  addImageButton.addEventListener('click', async function() {
-    const url = imageUrlInput.value.trim();
-    const description = imageDescriptionInput.value.trim();
-    const rarity = parseInt(imageRaritySelect.value);
-    
-    if (!url || !description) {
-      alert('请填写图片URL和描述!');
-      return;
-    }
-    
-    // 刷新数据
-    await loadData();
-    
-    globalData.images.push({
-      url: url,
-      description: description,
-      rarity: rarity
+  if (addImageButton) {
+    addImageButton.addEventListener('click', async function() {
+      const url = imageUrlInput.value.trim();
+      const description = imageDescriptionInput.value.trim();
+      
+      if (!url || !description) {
+        alert('请填写图片URL和描述!');
+        return;
+      }
+      
+      // 刷新数据
+      await loadData();
+      
+      globalData.images.push({
+        url: url,
+        description: description
+      });
+      
+      const saveSuccess = await saveData();
+      if (saveSuccess) {
+        updateAdminInterface();
+        imageUrlInput.value = '';
+        imageDescriptionInput.value = '';
+      } else {
+        alert('保存失败，请重试');
+      }
     });
-    
-    const saveSuccess = await saveData();
-    if (saveSuccess) {
-      updateAdminInterface();
-      imageUrlInput.value = '';
-      imageDescriptionInput.value = '';
-    } else {
-      alert('保存失败，请重试');
-    }
-  });
+  }
+  
+  // 重置扭蛋机
+  if (resetMachineButton) {
+    resetMachineButton.addEventListener('click', async function() {
+      if (confirm('确定要重置扭蛋机吗？所有历史记录将被清空！')) {
+        // 刷新数据
+        await loadData();
+        
+        // 保留图片库和余额，清空历史记录
+        globalData.history = [];
+        
+        const saveSuccess = await saveData();
+        if (saveSuccess) {
+          alert('扭蛋机已成功重置！');
+          updateAdminInterface();
+        } else {
+          alert('重置失败，请重试');
+        }
+      }
+    });
+  }
 }
 
-// 随机抽取图片逻辑
+// 随机抽取图片逻辑 - 均等概率
 function drawRandomImage() {
   if (!globalData.images || globalData.images.length === 0) return null;
   
-  // 根据稀有度计算概率
-  let weightedImages = [];
-  globalData.images.forEach(image => {
-    // 根据稀有度添加权重
-    const weight = image.rarity === 1 ? 60 : 
-                   image.rarity === 2 ? 30 : 10;
-    
-    for (let i = 0; i < weight; i++) {
-      weightedImages.push(image);
-    }
-  });
-  
-  // 随机选择
-  const randomIndex = Math.floor(Math.random() * weightedImages.length);
-  return weightedImages[randomIndex];
+  // 所有图片均等概率
+  const randomIndex = Math.floor(Math.random() * globalData.images.length);
+  return globalData.images[randomIndex];
 }
 
 // 显示历史记录
@@ -345,6 +375,100 @@ function displayHistory(container) {
   });
 }
 
+// 显示管理员页面的扭蛋历史记录
+function displayAdminHistory(container) {
+  container.innerHTML = '';
+  
+  if (!globalData.history || globalData.history.length === 0) {
+    container.innerHTML = '<p>暂无扭蛋记录。</p>';
+    return;
+  }
+  
+  // 创建表格
+  const table = document.createElement('table');
+  table.className = 'history-table';
+  
+  // 添加表头
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>时间</th>
+      <th>图片</th>
+      <th>描述</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+  
+  // 添加表格内容
+  const tbody = document.createElement('tbody');
+  [...globalData.history].reverse().forEach(item => {
+    const row = document.createElement('tr');
+    
+    // 时间列
+    const timeCell = document.createElement('td');
+    const timestamp = new Date(item.timestamp).toLocaleString();
+    timeCell.textContent = timestamp;
+    
+    // 图片列
+    const imageCell = document.createElement('td');
+    const img = document.createElement('img');
+    img.src = item.url;
+    img.alt = item.description;
+    img.className = 'history-thumbnail';
+    imageCell.appendChild(img);
+    
+    // 描述列
+    const descCell = document.createElement('td');
+    descCell.textContent = item.description;
+    
+    row.appendChild(timeCell);
+    row.appendChild(imageCell);
+    row.appendChild(descCell);
+    tbody.appendChild(row);
+  });
+  
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+// 显示图片库
+function displayImageGallery(container) {
+  container.innerHTML = '';
+  
+  if (!globalData.images || globalData.images.length === 0) {
+    container.innerHTML = '<p>图片库为空，请添加图片。</p>';
+    return;
+  }
+  
+  const galleryWrapper = document.createElement('div');
+  galleryWrapper.className = 'gallery-wrapper';
+  
+  globalData.images.forEach(image => {
+    const galleryItem = document.createElement('div');
+    galleryItem.className = 'gallery-item';
+    
+    const img = document.createElement('img');
+    img.src = image.url;
+    img.alt = image.description;
+    
+    const desc = document.createElement('p');
+    desc.textContent = image.description;
+    desc.className = 'gallery-description';
+    
+    galleryItem.appendChild(img);
+    galleryItem.appendChild(desc);
+    galleryWrapper.appendChild(galleryItem);
+  });
+  
+  container.appendChild(galleryWrapper);
+  
+  // 添加统计信息
+  const statsDiv = document.createElement('div');
+  statsDiv.className = 'gallery-stats';
+  statsDiv.innerHTML = `<p>图片总数: <strong>${globalData.images.length}</strong></p>`;
+  container.appendChild(statsDiv);
+}
+
 // 显示图片列表
 function displayImageList(container) {
   container.innerHTML = '';
@@ -365,10 +489,6 @@ function displayImageList(container) {
     const text = document.createElement('p');
     text.textContent = image.description;
     
-    const rarityText = document.createElement('p');
-    rarityText.textContent = ['普通', '稀有', '超稀有'][image.rarity - 1];
-    rarityText.style.color = ['#888', '#5d9', '#f5a'][image.rarity - 1];
-    
     const deleteButton = document.createElement('button');
     deleteButton.textContent = '删除';
     deleteButton.addEventListener('click', async function() {
@@ -386,6 +506,11 @@ function displayImageList(container) {
         const saveSuccess = await saveData();
         if (saveSuccess) {
           displayImageList(container);
+          // 更新图片库显示
+          const galleryContainer = document.getElementById('image-gallery');
+          if (galleryContainer) {
+            displayImageGallery(galleryContainer);
+          }
         } else {
           alert('删除失败，请重试');
         }
@@ -394,7 +519,6 @@ function displayImageList(container) {
     
     imageItem.appendChild(img);
     imageItem.appendChild(text);
-    imageItem.appendChild(rarityText);
     imageItem.appendChild(deleteButton);
     
     container.appendChild(imageItem);
@@ -424,9 +548,13 @@ function checkAdminAuth() {
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('页面加载完成');
+  
   if (window.location.pathname.includes('admin.html')) {
+    console.log('初始化管理页面');
     initAdminPage();
   } else {
+    console.log('初始化扭蛋页面');
     initGashaponPage();
   }
 });
