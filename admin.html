@@ -23,16 +23,28 @@
             <div class="image-form">
                 <input type="text" id="image-url" placeholder="图片URL地址">
                 <input type="text" id="image-description" placeholder="图片描述">
-                <select id="image-rarity">
-                    <option value="1">普通 (60%)</option>
-                    <option value="2">稀有 (30%)</option>
-                    <option value="3">超稀有 (10%)</option>
-                </select>
                 <button id="add-image">添加图片</button>
             </div>
             <div id="image-list" class="image-list">
                 <!-- 图片列表将在这里显示 -->
             </div>
+        </div>
+        <div class="admin-section">
+            <h2>图片库</h2>
+            <div id="image-gallery" class="image-gallery">
+                <!-- 图片库将在这里显示 -->
+            </div>
+        </div>
+        <div class="admin-section">
+            <h2>扭蛋历史记录</h2>
+            <div id="admin-history" class="history-list">
+                <!-- 历史记录将在这里显示 -->
+            </div>
+        </div>
+        <div class="admin-section">
+            <h2>系统操作</h2>
+            <button id="reset-machine" class="danger-button">重置扭蛋机</button>
+            <p class="warning-text">警告：重置将清空所有历史记录，但会保留图片库和余额。</p>
         </div>
         <a href="index.html" class="back-link">返回扭蛋机</a>
     </div>
