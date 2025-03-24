@@ -8,7 +8,7 @@
 body {
     background-color: #fff5e6; /* 温暖的米色背景 */
     color: #5a3d2b; /* 温暖的棕色文字 */
-    background-image: url('https://i.imgur.com/XtJKPmL.png'); /* 猫爪背景图案 */
+    background-image: url('https://imgur.com/Qjox4vn'); /* 猫爪背景图案 */
     background-size: 100px;
     background-repeat: repeat;
 }
@@ -49,10 +49,13 @@ h2 {
 }
 
 .machine-img {
-    width: 200px;
-    margin-bottom: 15px;
-    filter: drop-shadow(0px 5px 10px rgba(255, 166, 77, 0.4)); /* 添加滤镜阴影 */
+    width: 350px; /* 从原来的尺寸(可能是200px)增大到350px */
+    margin-bottom: 20px; /* 增加底部间距，让按钮离图片更远一点 */
+    display: block; /* 确保图片是块级元素 */
+    margin-left: auto; /* 这两行使图片水平居中 */
+    margin-right: auto;
 }
+
 
 button {
     background-color: #ff7e4a; /* 暖橙色 */
@@ -229,3 +232,139 @@ input:focus, select:focus {
     color: #ff9466; /* 亮一点的橙色 */
     text-decoration: underline;
 }
+
+/* 历史记录表格样式 */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(255, 166, 77, 0.2);
+  }
+  
+  .history-table th, 
+  .history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ffe0b3;
+  }
+  
+  .history-table th {
+    background-color: #ffecd6;
+    color: #ff7e4a;
+    font-weight: bold;
+  }
+  
+  .history-table tr:hover {
+    background-color: #fff8ef;
+  }
+  
+  .history-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #ffefdb;
+  }
+  
+  /* 图片库样式 */
+.gallery-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .gallery-item {
+    background-color: #fff8ef;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(255, 166, 77, 0.1);
+    text-align: center;
+    transition: transform 0.3s;
+  }
+  
+  .gallery-item:hover {
+    transform: scale(1.05);
+  }
+  
+  .gallery-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #ffefdb;
+  }
+  
+  .gallery-description {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #5a3d2b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .gallery-stats {
+    background-color: #ffecd6;
+    padding: 10px 15px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  /* 历史记录表格样式 */
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(255, 166, 77, 0.2);
+  }
+  
+  .history-table th, 
+  .history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ffe0b3;
+  }
+  
+  .history-table th {
+    background-color: #ffecd6;
+    color: #ff7e4a;
+    font-weight: bold;
+  }
+  
+  .history-table tr:hover {
+    background-color: #fff8ef;
+  }
+  
+  .history-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #ffefdb;
+  }
+  
+  /* 危险按钮和警告文字 */
+  .danger-button {
+    background-color: #ff5a5f;
+    box-shadow: 0 4px 0 #e04146;
+    margin-bottom: 10px;
+  }
+  
+  .danger-button:hover {
+    background-color: #ff7a7f;
+  }
+  
+  .warning-text {
+    color: #e04146;
+    font-size: 14px;
+    font-style: italic;
+  }
+  
