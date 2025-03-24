@@ -8,9 +8,6 @@
 body {
     background-color: #fff5e6; /* 温暖的米色背景 */
     color: #5a3d2b; /* 温暖的棕色文字 */
-    background-image: url('https://imgur.com/Qjox4vn'); /* 猫爪背景图案 */
-    background-size: 100px;
-    background-repeat: repeat;
 }
 
 .container {
